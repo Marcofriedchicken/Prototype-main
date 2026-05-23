@@ -81,12 +81,14 @@ export function Navbar({ onBookNow }: NavbarProps) {
         <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-48 h-0.5 bg-[#ED0407]" />
         
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-24">
+          <div className="relative flex items-center justify-between h-24">
+            <div className="hidden md:block w-10" />
+
             {/* Logo */}
             <motion.a
               href="#home"
               onClick={(e) => handleNavClick(e, "#home")}
-              className="flex-shrink-0"
+              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 md:static md:translate-x-0 md:translate-y-0"
               whileHover={{ scale: 1.02 }}
             >
               <Logo className="flex flex-col items-center" />
