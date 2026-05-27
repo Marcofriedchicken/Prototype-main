@@ -71,7 +71,7 @@ export function Hero({ onBookNow }: HeroProps) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.3 }}
         >
-          Ceramic Coating · Premium Carwash Wash · Paint Protection · Full Detailing · Engine Wash
+          Ceramic Coating · Premium Carwash Wash · Paint Correction · Full Detailing · Engine Wash
         </motion.p>
 
         {/* CTA Buttons */}

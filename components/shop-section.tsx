@@ -113,12 +113,13 @@ export function ShopSection() {
               </div>
 
               {/* Image Container */}
-              <div className="relative h-48 overflow-hidden bg-gradient-to-br from-[#171717] to-[#0f0f0f]">
+              <div className="relative h-67 overflow-hidden bg-gradient-to-br from-[#171717] to-[#0f0f0f]">
                 <Image
                   src={item.image}
                   alt={item.name}
                   fill
-                  className="object-contain p-3 transition-transform duration-200 group-hover:scale-[1.03]"
+                  loading="eager"
+                  className="object-cover transition-transform duration-200 group-hover:scale-[1.03]"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#111111] via-transparent to-transparent" />
               </div>

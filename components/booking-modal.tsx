@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { X, Info, Check, ChevronLeft, ChevronRight } from "lucide-react"
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover"
 import { services } from "./services-section"
 import { merchandise } from "./shop-section"
 
@@ -364,6 +365,27 @@ export function BookingModal({ isOpen, onClose, initialServiceId }: BookingModal
     return total
   }
 
+  const formatCurrency = (value: number) => `₱${value.toLocaleString()}`
+
+  const serviceTotal = calculateTotal()
+
+  const displayServiceTitle = isExpressFullDetailPlusUpgrade && baseServiceData && selectedServiceData
+    ? `${baseServiceData.title} + ${selectedServiceData.title}`
+    : selectedServiceData?.title || ""
+
+  const priceBreakdown = [
+    ...(isExpressFullDetailPlusUpgrade && baseServiceData && selectedServiceData
+      ? [
+          { label: baseServiceData.title, value: formatCurrency(baseServicePrice) },
+          { label: `+ ${selectedServiceData.title}`, value: formatCurrency(selectedServicePrice) },
+        ]
+      : selectedServiceData
+      ? [{ label: selectedServiceData.title, value: formatCurrency(selectedServicePrice) }]
+      : []),
+    ...selectedAddOnsData.map((addon) => ({ label: `+ ${addon.name}`, value: formatCurrency(addon.price) })),
+    ...selectedShopItemsData.map((item) => ({ label: `+ ${item.name}`, value: formatCurrency(item.priceValue) })),
+  ]
+
   const calculateEstimatedDuration = () => {
     let minutes = selectedServiceData?.durationMinutes || 0
     selectedAddOnsData.forEach((addon) => {
@@ -526,13 +548,75 @@ export function BookingModal({ isOpen, onClose, initialServiceId }: BookingModal
               </div>
 
               {/* Selected Service Display */}
-              {selectedServiceData && step > 1 && (
-                <div className="mt-4 p-3 rounded-lg border-2 border-[#D4A843]/30 bg-[#D4A843]/5 flex items-center justify-between">
-                  <span className="text-gray-500 text-sm">Selected Service</span>
-                  <div className="flex items-center gap-2">
-                    <span className="font-bold text-gray-900">{selectedServiceData.title}</span>
-                    <span className="text-[#D4A843] font-bold">₱{billedServicePrice.toLocaleString()}</span>
-                    <Info className="w-4 h-4 text-gray-400" />
+              {selectedServiceData && step >= 3 && vehicleType && (
+                <div className="mt-4 p-3 rounded-lg border-2 border-[#D4A843]/30 bg-[#D4A843]/5">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="font-bold text-gray-900 truncate">{displayServiceTitle}</p>
+                      {selectedAddOnsData.length > 0 && (
+                        <p className="text-xs text-gray-500 mt-1">
+                          Includes {selectedAddOnsData.length} add-on{selectedAddOnsData.length > 1 ? "s" : ""}
+                        </p>
+                      )}
+                    </div>
+                    <Popover>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[#D4A843] font-bold">{formatCurrency(serviceTotal)}</span>
+                        <PopoverTrigger asChild>
+                          <button
+                            type="button"
+                            className="p-2 rounded-full bg-[#F3F4F6] hover:bg-[#E5E7EB] transition-colors shadow-sm"
+                            aria-label="Show price details"
+                          >
+                            <Info className="w-4 h-4 text-gray-600" />
+                          </button>
+                        </PopoverTrigger>
+                      </div>
+                      <PopoverContent side="bottom" align="end" sideOffset={12} className="w-80 p-0 overflow-hidden">
+                        <div className="bg-white rounded-3xl border border-gray-200 shadow-[0_18px_50px_rgba(15,23,42,0.18)] overflow-hidden">
+                          <div className="px-5 py-5">
+                            <p className="text-lg font-bold text-gray-900">Price Breakdown</p>
+                            <p className="text-sm text-gray-500 mt-1">How your estimate is calculated</p>
+                          </div>
+
+                          {vehicleType && (
+                            <div className="mx-5 mb-4 rounded-2xl bg-slate-950 px-4 py-3 text-sm text-white shadow-sm">
+                              <p className="font-semibold">{vehicleType}</p>
+                              {vehicleMake && (
+                                <p className="text-xs text-slate-300">{vehicleMake}</p>
+                              )}
+                            </div>
+                          )}
+
+                          <div className="px-5 pb-4 space-y-3 text-sm text-gray-700">
+                            {priceBreakdown.map((item) => {
+                              const isAddOn = item.label.startsWith("+ ")
+                              return (
+                                <div key={item.label} className="flex justify-between items-center">
+                                  <span className="font-medium text-gray-900">{item.label}</span>
+                                  <span className={`font-semibold ${isAddOn ? "text-emerald-600" : "text-[#D4A843]"}`}>
+                                    {item.value}
+                                  </span>
+                                </div>
+                              )
+                            })}
+                          </div>
+
+                          <div className="border-t border-gray-100 px-5 py-4 bg-gray-50">
+                            <div className="flex items-center justify-between text-sm text-gray-600 mb-2">
+                              <span className="font-semibold text-gray-900">Estimated Total</span>
+                              <span className="font-bold text-[#D4A843]">{formatCurrency(serviceTotal)}</span>
+                            </div>
+                            <p className="text-xs text-gray-500 mb-2">
+                              <span className="font-semibold text-gray-900">Est. time:</span> {formatDuration(calculateEstimatedDuration())}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              Prices are estimates. Final price confirmed on arrival.
+                            </p>
+                          </div>
+                        </div>
+                      </PopoverContent>
+                    </Popover>
                   </div>
                 </div>
               )}
@@ -633,7 +717,7 @@ export function BookingModal({ isOpen, onClose, initialServiceId }: BookingModal
                               </div>
                               <div>
                                 <div className="font-semibold text-gray-900">{service.title}</div>
-                                <div className="text-sm text-gray-500">{service.price}</div>
+                                <div className="text-sm text-gray-500">Starting at <span className="font-semibold text-gray-900">{service.price}</span></div>
                               </div>
                             </div>
                             {selectedService === service.id && (
@@ -1074,16 +1158,6 @@ export function BookingModal({ isOpen, onClose, initialServiceId }: BookingModal
               </AnimatePresence>
             </div>
 
-            {(step === 4 || step === 5) && (
-              <div className="sticky bottom-20 z-20 bg-white border-t border-gray-100 px-6 py-4">
-                <div className="flex items-center justify-between gap-4">
-                  <span className="text-sm font-medium text-gray-500">Total</span>
-                  <span className="text-lg font-black text-[#D4A843]">
-                    ₱{calculateTotal().toLocaleString()}
-                  </span>
-                </div>
-              </div>
-            )}
 
             {/* Footer */}
             <div className="sticky bottom-0 bg-white p-6 pt-4 border-t border-gray-100">

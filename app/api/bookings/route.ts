@@ -12,6 +12,8 @@ import {
   getSheetId,
 } from "@/lib/google-sheets"
 
+const defaultLogoUrl = "https://res.cloudinary.com/dbawywjzi/image/upload/f_auto,q_auto/w-logo_rsditi"
+
 type Addon = {
   name: string
   price: number
@@ -38,25 +40,17 @@ type BookingPayload = {
 const currency = (value: number) => `PHP ${value.toLocaleString()}`
 
 function formatSlot(date: string, time: string) {
-  const [year, month, day] = date.split("-").map(Number)
-  const [hour, minute] = time.split(":").map(Number)
-  const dateObj = new Date(`${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}T${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}:00`)
-  const datePart = new Intl.DateTimeFormat("en-US", {
+  const slotsDate = new Date(`${date}T${time}:00+08:00`)
+  const formattedDate = slotsDate.toLocaleString("en-US", {
     month: "long",
     day: "numeric",
     year: "numeric",
-    timeZone: "Asia/Manila",
-  }).format(dateObj)
-  const timePart = new Intl.DateTimeFormat("en-US", {
     hour: "numeric",
-    minute: "numeric",
+    minute: "2-digit",
     hour12: true,
     timeZone: "Asia/Manila",
-  }).format(dateObj)
-    .replace(/:00/, "")
-    .replace(/\s+/g, "")
-    .toLowerCase()
-  return `${datePart} ${timePart}`
+  })
+  return formattedDate
 }
 
 function formatDuration(minutes: number) {
@@ -156,26 +150,23 @@ export async function POST(request: Request) {
       `Customer Email: ${payload.customerEmail}`,
       `Customer Phone: ${payload.customerPhone}`,
       "",
+      `Vehicle: ${payload.vehicle.make} ${payload.vehicle.model || ""}`.trim(),
+      `Year: ${payload.vehicle.year || "N/A"}`,
       `Service: ${payload.serviceTitle}`,
-      `Base Price: ${currency(payload.serviceBasePrice)}`,
       `Add-ons:\n${addonsText}`,
+      `Schedule: ${slotLabel}`,
       `Estimated Duration: ${durationLabel}`,
       `Total Amount: ${currency(payload.totalAmount)}`,
-      "",
-      `Vehicle: ${payload.vehicle.make} ${payload.vehicle.model || ""}`.trim(),
-      `Vehicle Year: ${payload.vehicle.year || "N/A"}`,
-      `Vehicle Type: ${payload.vehicle.type}`,
-      "",
-      `Schedule: ${slotLabel}`,
     ].join("\n")
 
-    const resolvedBaseUrl = (SITE_URL || NEXT_PUBLIC_SITE_URL || "").replace(/\/$/, "")
-    const fallbackLogoUrl = resolvedBaseUrl ? `${resolvedBaseUrl}/images/wayne-logo-email.png` : ""
-    const resolvedLogoUrl = BUSINESS_LOGO_URL || fallbackLogoUrl
-
-    const logoHtml = resolvedLogoUrl
-      ? `<img src="${resolvedLogoUrl}" alt="Wayne's Detailing" style="height:56px; width:auto; display:block; margin:0 auto 12px;" />`
-      : `<div style="display:inline-block; margin:0 auto 12px; padding:10px 14px; border:1px solid rgba(212,168,67,0.45); border-radius:9999px; color:#D4A843; font-weight:800; letter-spacing:0.08em; font-size:12px;">WAYNE'S DETAILING</div>`
+    const resolvedLogoUrl = BUSINESS_LOGO_URL || defaultLogoUrl
+    const logoHtml = `
+      <div style="display:inline-block; text-align:center; margin:0 auto 12px;">
+        <img src="${resolvedLogoUrl}" alt="Wayne's Detailing logo" style="height:72px; width:auto; display:block; margin:0 auto 8px;" />
+        <div style="font-family:Arial,Helvetica,sans-serif; color:#ED0407; font-weight:800; font-size:18px; letter-spacing:0.14em; text-transform:uppercase;">WAYNE'S DETAILING</div>
+        <div style="font-family:Arial,Helvetica,sans-serif; color:#F3F4F6; font-size:12px; letter-spacing:0.2em;">GET IT DONE</div>
+      </div>
+    `
 
     const emailShellStart = `
       <div style="background:#050505; padding:28px 14px; font-family:Arial,Helvetica,sans-serif; color:#F3F4F6;">
@@ -200,16 +191,14 @@ export async function POST(request: Request) {
           <div style="padding:20px;">
             <div style="border:1px solid #2F2F2F; border-radius:12px; padding:16px; background:#0F0F0F;">
               <p style="margin:0 0 8px; color:#D4A843; font-size:12px; letter-spacing:0.08em; text-transform:uppercase;">Booking Summary</p>
+              <p style="margin:0 0 8px;"><strong style="color:#FFFFFF;">Vehicle:</strong> ${payload.vehicle.make} ${payload.vehicle.model || ""}</p>
+              <p style="margin:0 0 8px;"><strong style="color:#FFFFFF;">Year:</strong> ${payload.vehicle.year || "N/A"}</p>
               <p style="margin:0 0 8px;"><strong style="color:#FFFFFF;">Service:</strong> ${payload.serviceTitle}</p>
+              <p style="margin:0 0 8px;"><strong style="color:#FFFFFF;">Add-ons:</strong> ${payload.addons.length > 0 ? "" : "None"}</p>
+              ${payload.addons.length > 0 ? `<p style="margin:0 0 8px; white-space:pre-line; color:#FFFFFF;">${addonsText}</p>` : ""}
               <p style="margin:0 0 8px;"><strong style="color:#FFFFFF;">Schedule:</strong> ${slotLabel}</p>
-              <p style="margin:0 0 8px;"><strong style="color:#FFFFFF;">Duration:</strong> ${durationLabel}</p>
+              <p style="margin:0 0 8px;"><strong style="color:#FFFFFF;">Estimated Time:</strong> ${durationLabel}</p>
               <p style="margin:0; color:#D4A843; font-size:18px; font-weight:800;"><strong>Total:</strong> ${currency(payload.totalAmount)}</p>
-            </div>
-            <div style="margin-top:14px; border:1px solid #2A2A2A; border-radius:12px; padding:14px; background:#121212;">
-              <p style="margin:0 0 8px; color:#D4A843; font-size:12px; letter-spacing:0.08em; text-transform:uppercase;">Vehicle & Add-ons</p>
-              <p style="margin:0 0 6px;"><strong style="color:#FFFFFF;">Vehicle:</strong> ${payload.vehicle.make} ${payload.vehicle.model || ""} (${payload.vehicle.type})</p>
-              <p style="margin:0 0 6px;"><strong style="color:#FFFFFF;">Year:</strong> ${payload.vehicle.year || "N/A"}</p>
-              <p style="margin:0; white-space:pre-line;"><strong style="color:#FFFFFF;">Add-ons:</strong>\n${addonsText}</p>
             </div>
       ${emailShellEnd}
     `
@@ -222,8 +211,13 @@ export async function POST(request: Request) {
           </div>
           <div style="padding:20px;">
             <div style="border:1px solid #2F2F2F; border-radius:12px; padding:16px; background:#0F0F0F;">
+              <p style="margin:0 0 8px;"><strong style="color:#FFFFFF;">Vehicle:</strong> ${payload.vehicle.make} ${payload.vehicle.model || ""}</p>
+              <p style="margin:0 0 8px;"><strong style="color:#FFFFFF;">Year:</strong> ${payload.vehicle.year || "N/A"}</p>
+              <p style="margin:0 0 8px;"><strong style="color:#FFFFFF;">Service:</strong> ${payload.serviceTitle}</p>
+              <p style="margin:0 0 8px;"><strong style="color:#FFFFFF;">Add-ons:</strong> ${payload.addons.length > 0 ? "" : "None"}</p>
+              ${payload.addons.length > 0 ? `<p style="margin:0 0 8px; white-space:pre-line; color:#FFFFFF;">${addonsText}</p>` : ""}
               <p style="margin:0 0 8px;"><strong style="color:#FFFFFF;">Schedule:</strong> ${slotLabel}</p>
-              <p style="margin:0 0 8px;"><strong style="color:#FFFFFF;">Duration:</strong> ${durationLabel}</p>
+              <p style="margin:0 0 8px;"><strong style="color:#FFFFFF;">Estimated Time:</strong> ${durationLabel}</p>
               <p style="margin:0; color:#D4A843; font-size:18px; font-weight:800;"><strong>Total:</strong> ${currency(payload.totalAmount)}</p>
             </div>
             <div style="margin-top:14px; border:1px solid #2A2A2A; border-radius:12px; padding:14px; background:#121212;">

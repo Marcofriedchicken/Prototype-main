@@ -18,7 +18,7 @@ const services = [
   "Ceramic Coating",
   "Engine Wash",
   "Full Detailing",
-  "Paint Protection",
+  "Paint Correction",
   "Premium Carwash",
 ]
 

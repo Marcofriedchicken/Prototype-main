@@ -90,7 +90,7 @@ export function ContactSection({ onBookNow }: ContactSectionProps) {
               <div>
                 <h3 className="text-white font-bold text-lg mb-1">Business Hours</h3>
                 <p className="text-white/60">
-                  Daily: 7:00 AM – 8:00 PM · 7 days
+                  Daily: 7:00 AM – 8:00 PM
                 </p>
               </div>
             </div>
