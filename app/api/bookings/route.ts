@@ -63,7 +63,7 @@ function formatDuration(minutes: number) {
 
 const SERVICE_DURATIONS: Record<string, number> = {
   "Express Wash": 35,
-  "Express Full Detail": 60,
+  "Express Full Wash": 60,
   "Deluxe Detail": 60,
   "Premium Wash": 60,
   "Premium Detail": 80,

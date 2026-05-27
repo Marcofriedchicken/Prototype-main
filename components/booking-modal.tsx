@@ -281,6 +281,20 @@ export function BookingModal({ isOpen, onClose, initialServiceId }: BookingModal
 
   const selectedAddOnsData = addOns.filter((addon) => selectedAddOns.includes(addon.id))
   const addOnVisibilityByService: Record<string, string[]> = {
+    "express-wash": [
+      "headlight-restoration",
+      "engine-bay-cleaning",
+      "back-to-zero",
+      "water-spot-removal",
+      "quick-beads",
+    ],
+    "express-full-detail": [
+      "headlight-restoration",
+      "engine-bay-cleaning",
+      "back-to-zero",
+      "water-spot-removal",
+      "quick-beads",
+    ],
     "deluxe-detail": [
       "headlight-restoration",
       "engine-bay-cleaning",
@@ -340,17 +354,10 @@ export function BookingModal({ isOpen, onClose, initialServiceId }: BookingModal
       : baseServiceData.priceValue
     : 0
 
-  const expressFullDetailAddOnUpgradeIds = new Set<string>([
-    "deluxe-detail",
-    "premium-detail",
-    "executive-detail",
-  ])
+  const isPaintCorrectionAdditive =
+    baseServiceForUpgrades === "express-full-detail" && selectedService === "paint-correction"
 
-  const isExpressFullDetailPlusUpgrade =
-    baseServiceForUpgrades === "express-full-detail" &&
-    expressFullDetailAddOnUpgradeIds.has(selectedService)
-
-  const billedServicePrice = isExpressFullDetailPlusUpgrade
+  const billedServicePrice = isPaintCorrectionAdditive
     ? baseServicePrice + selectedServicePrice
     : selectedServicePrice
 
@@ -369,12 +376,10 @@ export function BookingModal({ isOpen, onClose, initialServiceId }: BookingModal
 
   const serviceTotal = calculateTotal()
 
-  const displayServiceTitle = isExpressFullDetailPlusUpgrade && baseServiceData && selectedServiceData
-    ? `${baseServiceData.title} + ${selectedServiceData.title}`
-    : selectedServiceData?.title || ""
+  const displayServiceTitle = selectedServiceData?.title || ""
 
   const priceBreakdown = [
-    ...(isExpressFullDetailPlusUpgrade && baseServiceData && selectedServiceData
+    ...(isPaintCorrectionAdditive && baseServiceData && selectedServiceData
       ? [
           { label: baseServiceData.title, value: formatCurrency(baseServicePrice) },
           { label: `+ ${selectedServiceData.title}`, value: formatCurrency(selectedServicePrice) },
@@ -847,13 +852,7 @@ export function BookingModal({ isOpen, onClose, initialServiceId }: BookingModal
                               : upgrade.priceValue
                             const priceDifference = Math.max(upgradePrice - baseServicePrice, 0)
                             const showAsAdditional =
-                              (baseServiceForUpgrades === "express-wash" && upgrade.id === "express-full-detail") ||
-                              (baseServiceForUpgrades === "express-full-detail" &&
-                                [
-                                  "deluxe-detail",
-                                  "premium-detail",
-                                  "executive-detail",
-                                ].includes(upgrade.id))
+                              baseServiceForUpgrades === "express-full-detail" && upgrade.id === "paint-correction"
 
                             return (
                               <button
@@ -931,8 +930,13 @@ export function BookingModal({ isOpen, onClose, initialServiceId }: BookingModal
                                   <p className="text-gray-500 text-sm mt-1">{addon.description}</p>
                                 </div>
                                 <div className="text-right">
-                                  <p className="text-[#D4A843] font-bold">+₱{addon.price.toLocaleString()}</p>
-                                  <p className="text-xs text-[#D4A843] font-medium">{addon.duration}</p>
+                                  <div className="flex flex-col items-end">
+                                    <div className="text-[#D4A843] font-bold flex items-baseline gap-1">
+                                      <span>+</span>
+                                      <span>₱{addon.price.toLocaleString()}</span>
+                                    </div>
+                                    <p className="text-xs text-[#D4A843] font-medium">{addon.duration}</p>
+                                  </div>
                                 </div>
                               </div>
                             </button>
@@ -956,16 +960,20 @@ export function BookingModal({ isOpen, onClose, initialServiceId }: BookingModal
                             <button
                               key={item.id}
                               onClick={() => toggleShopItem(item.id)}
-                              className={`rounded-2xl border p-4 text-left transition-all ${
+                              className={`relative overflow-visible rounded-2xl border p-4 text-left transition-all ${
                                 selected ? "border-[#D4A843] bg-[#FDF7E4]" : "border-gray-200 bg-white hover:border-gray-300"
                               }`}
                             >
-                              <div className="flex items-start justify-between gap-3">
-                                <div>
+                              <span className="absolute top-7 right-3 z-50 pointer-events-none text-[#D4A843] font-bold inline-flex items-baseline gap-1">
+                                <span className="text-sm">+</span>
+                                <span>{item.price}</span>
+                              </span>
+
+                              <div className="flex items-start gap-3">
+                                <div className="pr-8 flex-1">
                                   <h4 className="font-bold text-gray-900">{item.name}</h4>
                                   <p className="text-gray-500 text-sm mt-1 line-clamp-2">{item.description}</p>
                                 </div>
-                                <span className="text-[#D4A843] font-bold">{item.price}</span>
                               </div>
                               <div className="mt-4 flex items-center justify-between">
                                 <span className="text-xs uppercase tracking-[0.2em] text-gray-500">{item.category}</span>

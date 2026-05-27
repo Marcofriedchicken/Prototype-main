@@ -25,6 +25,7 @@ export const services = [
       "deluxe-detail",
       "premium-detail",
       "executive-detail",
+      "paint-correction",
       "ceramic-coating-3yr",
       "ceramic-coating-5yr",
     ],
@@ -41,17 +42,17 @@ export const services = [
   },
   {
     id: "express-full-detail",
-    title: "Express Full Detail",
+    title: "Express Full Wash",
     description:
       "A complete interior and exterior cleaning in one visit-designed to quickly restore your vehicle's overall cleanliness inside and out. (1 hr)",
-    price: "₱700",
-    priceValue: 700,
+    price: "₱500",
+    priceValue: 500,
     prices: {
-      "Compact/Hatch": 700,
-      "Sedan Type": 720,
-      "APV/AUV": 740,
-      "SUV/Pick-up": 760,
-      "Lifted/Van/L300": 780,
+      "Compact/Hatch": 500,
+      "Sedan Type": 520,
+      "APV/AUV": 540,
+      "SUV/Pick-up": 560,
+      "Lifted/Van/L300": 580,
     },
     duration: "1 hr",
     durationMinutes: 60,
@@ -59,6 +60,7 @@ export const services = [
       "deluxe-detail",
       "premium-detail",
       "executive-detail",
+      "paint-correction",
       "ceramic-coating-3yr",
       "ceramic-coating-5yr",
     ],
@@ -67,7 +69,6 @@ export const services = [
       "All Express Wash",
       "Deluxe Interior Detail",
       "Interior Dressing",
-      "Leather Conditioning",
       "Trim Restoration",
       "Cabin Fragrance",
     ],
@@ -88,16 +89,16 @@ export const services = [
     },
     duration: "1 hr",
     durationMinutes: 60,
-    canUpgradeTo: ["premium-detail", "executive-detail", "ceramic-coating-3yr", "ceramic-coating-5yr"],
+    canUpgradeTo: ["premium-detail", "executive-detail", "paint-correction", "ceramic-coating-3yr", "ceramic-coating-5yr"],
     image: "/images/shop-deluxe-detail.jpeg",
     features: [
       "All Express Wash",
       "Interior Dressing",
       "Back to Zero Sanitation",
-      "Leather Conditioning",
       "Trim Restoration",
       "Cabin Fragrance",
       "Iron Remover",
+      "Machine Buff Wax",
     ],
   },
   {
@@ -122,11 +123,11 @@ export const services = [
       "All Express Wash",
       "Interior Dressing",
       "Back to Zero Sanitation",
-      "Leather Conditioning",
       "Trim Restoration",
       "Cabin Fragrance",
       "Iron Remover",
       "Water Spot Remover",
+      "Machine Buff Wax",
     ],
   },
   {
@@ -145,17 +146,17 @@ export const services = [
     },
     duration: "1 hr 45 mins",
     durationMinutes: 105,
-    canUpgradeTo: ["ceramic-coating-3yr", "ceramic-coating-5yr"],
+    canUpgradeTo: ["paint-correction", "ceramic-coating-3yr", "ceramic-coating-5yr"],
     image: "/images/engine-wash.jpg",
     features: [
       "All Express Wash",
       "Interior Dressing",
       "Back to Zero Sanitation",
-      "Leather Conditioning",
       "Trim Restoration",
       "Cabin Fragrance",
       "Iron Remover",
       "Water Spot Remover",
+      "Machine Buff Wax",
       "Engine Bay Wash",
     ],
   },
@@ -163,15 +164,15 @@ export const services = [
     id: "paint-correction",
     title: "Paint Correction",
     description:
-      "A multi-stage polishing process that eliminates defects, restoring deep gloss, clarity, and a flawless finish. (2 hrs)",
+      "A multi-stage polishing process that eliminates defects—restoring deep gloss, clarity, and a flawless finish.",
     price: "₱4,500",
     priceValue: 4500,
     prices: {
       "Compact/Hatch": 4500,
       "Sedan Type": 5000,
       "APV/AUV": 6000,
-      "SUV/Pick-up": 7000,
-      "Lifted/Van/L300": 7500,
+      "SUV/Pick-up": 6500,
+      "Lifted/Van/L300": 7000,
     },
     duration: "2 hrs",
     durationMinutes: 120,
@@ -249,7 +250,11 @@ interface ServicesSectionProps {
 }
 
 export function ServicesSection({ onBookService }: ServicesSectionProps) {
-  const mainServices = services.filter((s) => !CERAMIC_SERVICE_IDS.has(s.id))
+  // Show non-ceramic services sorted by ascending base price (low -> high)
+  const mainServices = services
+    .filter((s) => !CERAMIC_SERVICE_IDS.has(s.id))
+    .slice()
+    .sort((a, b) => (a.priceValue || 0) - (b.priceValue || 0))
   const ceramicServices = services.filter((s) => CERAMIC_SERVICE_IDS.has(s.id))
 
   return (
