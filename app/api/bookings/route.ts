@@ -207,7 +207,7 @@ export async function POST(request: Request) {
       ${emailShellStart}
             <p style="margin:0; color:#D4A843; font-size:12px; letter-spacing:0.12em; text-transform:uppercase; font-weight:700;">New Booking Alert</p>
             <h2 style="margin:8px 0 0; color:#FFFFFF; font-size:28px; line-height:1.2;">${payload.serviceTitle}</h2>
-            <p style="margin:8px 0 0; color:#D1D5DB; font-size:14px;">Customer: ${payload.customerName || "N/A"} · ${payload.customerPhone}</p>
+            <p style="margin:8px 0 0; color:#D1D5DB; font-size:14px;">Customer: ${payload.customerName || "N/A"} · ${payload.customerPhone} · ${payload.customerEmail}</p>
           </div>
           <div style="padding:20px;">
             <div style="border:1px solid #2F2F2F; border-radius:12px; padding:16px; background:#0F0F0F;">
@@ -219,9 +219,6 @@ export async function POST(request: Request) {
               <p style="margin:0 0 8px;"><strong style="color:#FFFFFF;">Schedule:</strong> ${slotLabel}</p>
               <p style="margin:0 0 8px;"><strong style="color:#FFFFFF;">Estimated Time:</strong> ${durationLabel}</p>
               <p style="margin:0; color:#D4A843; font-size:18px; font-weight:800;"><strong>Total:</strong> ${currency(payload.totalAmount)}</p>
-            </div>
-            <div style="margin-top:14px; border:1px solid #2A2A2A; border-radius:12px; padding:14px; background:#121212;">
-              <p style="margin:0; white-space:pre-line;">${bookingText}</p>
             </div>
       ${emailShellEnd}
     `
@@ -320,7 +317,7 @@ export async function POST(request: Request) {
     const ownerEmail = BOOKING_OWNER_EMAIL || BOOKING_OWNER_EMAIL_ADDRESS || FALLBACK_OWNER_EMAIL
     const customerSubject = "Booking Confirmation - Wayne's Detailing"
     const ownerSubject = `New Booking: ${payload.serviceTitle} - ${payload.customerName || payload.customerPhone}`
-    const customerText = `Hi ${payload.customerName || "there"},\n\nYour booking has been received.\n\nScheduled Date & Time: ${slotLabel}\nEstimated Duration: ${durationLabel}\nTotal Price: ${currency(payload.totalAmount)}\n\n${bookingText}\n\nIf you need changes, reply to this email or call 0917-376-3348.`
+    const customerText = `WAYNE'S DETAILING\nGET IT DONE\n\nBOOKING CONFIRMED\n\nThank you, ${payload.customerName || "there"}.\nYour appointment has been successfully scheduled.\n\n${bookingText}\n\nQuestions? Reply to this email or call 0917-376-3348.`
 
     let emailSent = false
     let ownerEmailSent = false

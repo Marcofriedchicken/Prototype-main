@@ -2,4 +2,5 @@ node_modules/
 .next/
 out/
 build/
-.env*.localdesktop.ini 
+.env*.local
+desktop.ini 
